@@ -22,4 +22,4 @@ limit 10;
 
 --Countries' demands for the store's products to identify countries for expansion opportunities
 
---Link to dashboard:
+--Link to dashboard: https://public.tableau.com/app/profile/lu.woon/viz/OnlineRetailStoreBusinessAnalysis/Dashboard1?publish=yes
