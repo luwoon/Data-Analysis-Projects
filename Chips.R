@@ -18,7 +18,6 @@ transaction_data$DATE <- as.Date(transaction_data$DATE, origin = "1899-12-30")
 
 #view summary of transaction_date$PROD_NAME
 table(transaction_data$PROD_NAME)
-
 #text analysis of transaction_date$PROD_NAME by extracting unique individual words
 productWords <- data.table(unlist(strsplit(unique(as.character(transaction_data[, "PROD_NAME"])), " ")))
 setnames(productWords, 'words')
@@ -126,7 +125,7 @@ total_sales_by_lifestage_and_premium_customer$GROUP <- paste(total_sales_by_life
 p2 <- ggplot(data = total_sales_by_lifestage_and_premium_customer, aes(x = reorder(GROUP, -total_sales), y = total_sales)) +
   geom_bar(stat="identity")
 p2
-#sales came mainly from budget - older families, mainstream - young singles/couples, and mainstream - retirees
+#sales come mainly from budget - older families, mainstream - young singles/couples, and mainstream - retirees
 
 #average number of units per customers by LIFESTAGE and PREMIUM_CUSTOMER
 average_qty_by_lifestage <- data %>%
@@ -153,17 +152,17 @@ p3
 #average price per unit by LIFESTAGE and PREMIUM_CUSTOMER
 average_price_by_lifestage <- data %>%
   group_by(LIFESTAGE) %>%
-  summarize(average_price = mean(TOT_SALES/PROD_QTY)) %>%
+  summarize(average_price = mean((TOT_SALES/PROD_QTY)/PACK_SIZE) %>%
   arrange(desc(average_price))
 print(average_price_by_lifestage)
 average_price_by_premium_customer <- data %>%
   group_by(PREMIUM_CUSTOMER) %>%
-  summarize(average_price = mean(TOT_SALES/PROD_QTY)) %>%
+  summarize(average_price = mean((TOT_SALES/PROD_QTY)/PACK_SIZE) %>%
   arrange(desc(average_price))
 print(average_price_by_premium_customer)
 average_price_by_lifestage_and_premium_customer <- data %>%
   group_by(LIFESTAGE, PREMIUM_CUSTOMER) %>%
-  summarize(average_price = mean(TOT_SALES/PROD_QTY)) %>%
+  summarize(average_price = mean((TOT_SALES/PROD_QTY)/PACK_SIZE) %>%
   arrange(desc(average_price))
 print(average_price_by_lifestage_and_premium_customer)
 average_price_by_lifestage_and_premium_customer$GROUP <- paste(average_price_by_lifestage_and_premium_customer$PREMIUM_CUSTOMER, average_price_by_lifestage_and_premium_customer$LIFESTAGE, sep = " ")
@@ -178,3 +177,38 @@ s1 <- average_price_by_lifestage_and_premium_customer[average_price_by_lifestage
 s2 <- average_price_by_lifestage_and_premium_customer[average_price_by_lifestage_and_premium_customer$GROUP == 'Premium YOUNG SINGLES/COUPLES' | average_price_by_lifestage_and_premium_customer$GROUP == 'Premium MIDAGE SINGLES/COUPLES' | average_price_by_lifestage_and_premium_customer$GROUP == 'Budget YOUNG SINGLES/COUPLES' | average_price_by_lifestage_and_premium_customer$GROUP == 'Budget MIDAGE SINGLES/COUPLES',]
 t.test(s1$average_price, s2$average_price)
 #the t-test results in a p-value of 0.01271 < 0.05, i.e. the unit price for mainstream young and midage singles and couples are significantly higher than that of budget or premium young and midage singles and couples
+
+#overall brand preference
+brand_pref <- data %>%
+  group_by(BRAND) %>%
+  summarize(pref = sum(PROD_QTY)) %>%
+  arrange(desc(pref))
+brand_pref
+p5 <- ggplot(data = brand_pref, aes(x = BRAND, y = pref)) +
+  geom_bar(stat="identity")
+p5
+#top 3 brands are Kettle, Smiths, and Doritos
+
+#brand preference of mainstream customers
+brand_pref_mainstream <- data %>%
+  group_by(BRAND) %>%
+  filter(PREMIUM_CUSTOMER == "Mainstream") %>%
+  summarize(pref = sum(PROD_QTY)) %>%
+  arrange(desc(pref))
+brand_pref_mainstream
+p6 <- ggplot(data = brand_pref_mainstream, aes(x = BRAND, y = pref)) +
+  geom_bar(stat="identity")
+p6
+#top 3 brands are Kettle, Smiths, and Doritos
+
+#brand preference of young singles/couples
+brand_pref_young <- data %>%
+  group_by(BRAND) %>%
+  filter(LIFESTAGE == "YOUNG SINGLES/COUPLES") %>%
+  summarize(pref = sum(PROD_QTY)) %>%
+  arrange(desc(pref))
+brand_pref_young
+p7 <- ggplot(data = brand_pref_young, aes(x = BRAND, y = pref)) +
+  geom_bar(stat="identity")
+p7
+#top 3 brands are Kettle, Smiths, and Pringles
